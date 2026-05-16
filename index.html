@@ -1,46 +1,741 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>من سيربح الملكوت؟</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Amiri:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>من سيربح الملكوت ؟ - الإصدار الكامل</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Amiri:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-gold: #c5a059;
+            --deep-blue: #05051a;
+            --correct-green: #22c55e;
+            --wrong-red: #ef4444;
+            --glass-bg: rgba(10, 10, 35, 0.8);
+        }
+
+        body {
+            background-color: #02020a;
+            color: white;
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 1280px;
+            height: 720px;
+            background: radial-gradient(circle at center, #1a1a4a 0%, #050510 100%);
+            border: 4px solid var(--primary-gold);
+            position: relative;
+            box-shadow: 0 0 50px rgba(197, 160, 89, 0.3);
+            overflow: hidden;
+            border-radius: 15px;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            padding: 40px;
+            z-index: 10;
+        }
+
+        .slide.active {
+            display: flex;
+            animation: slideIn 0.6s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .top-ui {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(197, 160, 89, 0.3);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .answer-btn {
+            background: linear-gradient(180deg, #101030 0%, #050515 100%);
+            border: 2px solid var(--primary-gold);
+            border-radius: 50px;
+            color: #fff;
+            cursor: pointer;
+            padding: 15px 25px;
+            font-size: 22px;
+            font-weight: bold;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .answer-btn::before {
+            content: attr(data-prefix);
+            color: var(--primary-gold);
+            margin-left: 15px;
+            font-weight: 900;
+            background: rgba(197, 160, 89, 0.1);
+            width: 35px;
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+
+        .answer-btn:hover {
+            background: rgba(197, 160, 89, 0.2);
+            transform: translateX(-5px);
+        }
+
+        .answer-btn.correct-state {
+            background: var(--correct-green) !important;
+            border-color: #fff !important;
+            box-shadow: 0 0 20px var(--correct-green);
+        }
+
+        .answer-btn.wrong-state {
+            background: var(--wrong-red) !important;
+            border-color: #fff !important;
+            animation: shake 0.4s ease;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .question-box {
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--primary-gold);
+            padding: 25px;
+            text-align: center;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: inset 0 0 20px rgba(197, 160, 89, 0.1);
+        }
+
+        .timer-circle {
+            width: 80px;
+            height: 80px;
+            border: 3px solid var(--primary-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.7);
+            font-size: 28px;
+            font-weight: 900;
+        }
+
+        .reveal-box {
+            background: rgba(197, 160, 89, 0.05);
+            border: 2px dashed var(--primary-gold);
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .reveal-box:hover {
+            background: rgba(197, 160, 89, 0.15);
+        }
+
+        .reveal-answer {
+            display: none;
+            color: var(--primary-gold);
+            font-size: 32px;
+            font-weight: 900;
+            margin-top: 10px;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+
+        .progress-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 6px;
+            background: var(--primary-gold);
+            transition: width 0.5s ease;
+        }
+    </style>
 </head>
 <body>
 
-<div class="game-container">
-  <div class="slide active" id="intro">
-    <h1 class="title">من سيربح الملكوت؟</h1>
-    <p class="subtitle">مسابقة كنسية تفاعلية</p>
-    <button class="main-btn" onclick="nextSlide()">ابدأ المسابقة</button>
-  </div>
-
-  <div class="slide">
-    <div class="top-ui">
-      <span>السؤال ١</span>
-      <div class="timer-circle" id="timer">30</div>
+<div class="game-container" id="gameMaster">
+    
+    <div class="slide active" id="slide-intro">
+        <div class="flex flex-col items-center justify-center h-full text-center">
+            <h1 class="text-7xl font-black mb-6" style="color: var(--primary-gold); font-family: 'Amiri';">من سيربح الملكوت؟</h1>
+            <p class="text-3xl mb-12 opacity-80">مسابقة شاملة في الطقس والألحان واللغة القبطية</p>
+            <button onclick="nextSlide()" class="answer-btn" style="max-width: 300px; justify-content: center;" data-prefix="">ابدأ المسابقة</button>
+        </div>
     </div>
 
-    <div class="question-box">
-      يصلى الكاهن صلاة ........... بعد ارتداء التونية
+    
+    <!-- Q1 -->
+    <div class="slide" data-type="mcq">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">طقس القداس</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ١</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">يصلى الكاهن صلاة ........... بعد ارتداء التونية</h2>
+        </div>
+        <div class="grid grid-cols-1 gap-2 place-items-center">
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="A">الشكر</button>
+            <button class="answer-btn" onclick="handleAnswer(this, true)" data-prefix="B">الاستعداد</button>
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="C">الأجبية</button>
+        </div>
     </div>
 
-    <div class="answers">
-      <button class="answer-btn" onclick="checkAnswer(this,false)">الشكر</button>
-      <button class="answer-btn" onclick="checkAnswer(this,true)">الاستعداد</button>
-      <button class="answer-btn" onclick="checkAnswer(this,false)">الأجبية</button>
+    <!-- Q2 -->
+    <div class="slide" data-type="mcq">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">طقس القداس</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ٢</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">يصلى الكاهن صلاة الاستعداد ويعلن ..............</h2>
+        </div>
+        <div class="grid grid-cols-1 gap-2 place-items-center">
+            <button class="answer-btn" onclick="handleAnswer(this, true)" data-prefix="A">توبته</button>
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="B">توبة الشعب</button>
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="C">محبة الله</button>
+        </div>
     </div>
-  </div>
 
-  <div class="slide" id="end">
-    <h1 class="title">انتهت المسابقة 👑</h1>
-    <button class="main-btn" onclick="restartGame()">إعادة اللعب</button>
-  </div>
+    <!-- Q3 -->
+    <div class="slide" data-type="mcq">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">الأجبية</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ٣</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">نصلى صلاة ............. فى ايام السبوت والآفطار</h2>
+        </div>
+        <div class="grid grid-cols-1 gap-2 place-items-center">
+            <button class="answer-btn" onclick="handleAnswer(this, true)" data-prefix="A">الثلاثة والسادسة</button>
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="B">الثلاثة والسادسة والتاسعة</button>
+        </div>
+    </div>
 
+    <!-- Q4 -->
+    <div class="slide" data-type="mcq">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">الأعياد السيدية</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ٤</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">فى عيد العنصرة نصلى ..................</h2>
+        </div>
+        <div class="grid grid-cols-1 gap-2 place-items-center">
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="A">الصلاة الثالثة</button>
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="B">الثلاثة والسادسة والتاسعة</button>
+            <button class="answer-btn" onclick="handleAnswer(this, true)" data-prefix="C">الثالثة فقط</button>
+        </div>
+    </div>
+
+    <!-- Q5 -->
+    <div class="slide" data-type="tf">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">تقديم الحمل</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ٥</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">يلتفت الكاهن الى الشرق عند رفع الحمل</h2>
+        </div>
+        <div class="flex justify-center gap-4">
+            <button class="answer-btn" style="max-width: 200px" onclick="handleAnswer(this, false)" data-prefix="✔">صح</button>
+            <button class="answer-btn" style="max-width: 200px" onclick="handleAnswer(this, true)" data-prefix="✖">خطأ</button>
+        </div>
+    </div>
+
+    <!-- Q6 -->
+    <div class="slide" data-type="tf">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">تقديم الحمل</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ٦</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">يلف الكاهن الحمل بلفافة بيضاء</h2>
+        </div>
+        <div class="flex justify-center gap-4">
+            <button class="answer-btn" style="max-width: 200px" onclick="handleAnswer(this, true)" data-prefix="✔">صح</button>
+            <button class="answer-btn" style="max-width: 200px" onclick="handleAnswer(this, false)" data-prefix="✖">خطأ</button>
+        </div>
+    </div>
+
+    <!-- Q7 -->
+    <div class="slide" data-type="mcq">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">طقس القداس</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ٧</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">اثناء صلاة قانون الإيمان ........</h2>
+        </div>
+        <div class="grid grid-cols-1 gap-2 place-items-center">
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="A">يفرش الكاهن المذبح</button>
+            <button class="answer-btn" onclick="handleAnswer(this, true)" data-prefix="B">يغسل يديه ويصلي</button>
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="C">يغسل الشماس يديه</button>
+        </div>
+    </div>
+
+    <!-- Q8 -->
+    <div class="slide" data-type="tf">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">تقديم الحمل</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ٨</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">طبق الحمل يكون فيه الحمل عدد زوجى</h2>
+        </div>
+        <div class="flex justify-center gap-4">
+            <button class="answer-btn" style="max-width: 200px" onclick="handleAnswer(this, false)" data-prefix="✔">صح</button>
+            <button class="answer-btn" style="max-width: 200px" onclick="handleAnswer(this, true)" data-prefix="✖">خطأ</button>
+        </div>
+    </div>
+
+    <!-- Q9 -->
+    <div class="slide" data-type="tf">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">تقديم الحمل</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ٩</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">يكون ثقوب الحمل الثلاثة ناحية اليسار</h2>
+        </div>
+        <div class="flex justify-center gap-4">
+            <button class="answer-btn" style="max-width: 200px" onclick="handleAnswer(this, false)" data-prefix="✔">صح</button>
+            <button class="answer-btn" style="max-width: 200px" onclick="handleAnswer(this, true)" data-prefix="✖">خطأ</button>
+        </div>
+    </div>
+
+    <!-- Q10 -->
+    <div class="slide" data-type="tf">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">تقديم الحمل</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ١٠</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">يوزع باقى قربان الحمل لافتقاد الشعب</h2>
+        </div>
+        <div class="flex justify-center gap-4">
+            <button class="answer-btn" style="max-width: 200px" onclick="handleAnswer(this, true)" data-prefix="✔">صح</button>
+            <button class="answer-btn" style="max-width: 200px" onclick="handleAnswer(this, false)" data-prefix="✖">خطأ</button>
+        </div>
+    </div>
+
+
+    <!-- Q11 -->
+    <div class="slide" data-type="fill">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">الأواشي</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ١١</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">اذكر الثلاثة اواشى التى يصليها الكاهن</h2>
+        </div>
+        <div class="reveal-box" onclick="revealAnswer(this)">
+            <span class="text-xl opacity-60">انقر لكشف الإجابة</span>
+            <div class="reveal-answer">السلامة - الآباء - الاجتماعات</div>
+        </div>
+        <button onclick="nextSlide()" class="answer-btn mt-6" style="max-width: 200px; align-self: center;" data-prefix="">التالي</button>
+    </div>
+
+    <!-- Q12 -->
+    <div class="slide" data-type="fill">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">طقس تقديم الحمل</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ١٢</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">يمسح الكاهن القربانة بالماء اشارة الى...</h2>
+        </div>
+        <div class="reveal-box" onclick="revealAnswer(this)">
+            <span class="text-xl opacity-60">انقر لكشف الإجابة</span>
+            <div class="reveal-answer">لما حدث للسيد المسيح فى عماده من يوحنا المعمدان</div>
+        </div>
+        <button onclick="nextSlide()" class="answer-btn mt-6" style="max-width: 200px; align-self: center;" data-prefix="">التالي</button>
+    </div>
+
+    <!-- Q14 (Skipped 13 as it was duplicate) -->
+    <div class="slide" data-type="fill">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">الألحان</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ١٣</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">يرتل الشعب اللحن الرسمى لتقديم الحمل وهو...</h2>
+        </div>
+        <div class="reveal-box" onclick="revealAnswer(this)">
+            <span class="text-xl opacity-60">انقر لكشف الإجابة</span>
+            <div class="reveal-answer">إلى القربان (إبي أويك)</div>
+        </div>
+        <button onclick="nextSlide()" class="answer-btn mt-6" style="max-width: 200px; align-self: center;" data-prefix="">التالي</button>
+    </div>
+
+    <!-- Q15 -->
+    <div class="slide" data-type="fill">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">الألحان</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ١٤</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">يرتل الشعب الليلويا أى أى ايخون فى ايام...</h2>
+        </div>
+        <div class="reveal-box" onclick="revealAnswer(this)">
+            <span class="text-xl opacity-60">انقر لكشف الإجابة</span>
+            <div class="reveal-answer">أيام الصوم الكبير (دون أحاده) وثلاثه أيام نينوى</div>
+        </div>
+        <button onclick="nextSlide()" class="answer-btn mt-6" style="max-width: 200px; align-self: center;" data-prefix="">التالي</button>
+    </div>
+
+    <!-- Q16 -->
+    <div class="slide" data-type="fill">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">الألحان</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ١٥</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">لحن الليلويا فى الآحاد و الآعياد السيدية والخمسين...</h2>
+        </div>
+        <div class="reveal-box" onclick="revealAnswer(this)">
+            <span class="text-xl opacity-60">انقر لكشف الإجابة</span>
+            <div class="reveal-answer">فى بى بى ايهووو</div>
+        </div>
+        <button onclick="nextSlide()" class="answer-btn mt-6" style="max-width: 200px; align-self: center;" data-prefix="">التالي</button>
+    </div>
+
+    <!-- Q17 -->
+    <div class="slide" data-type="fill">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">الألحان</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ١٦</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">يرتل الشعب الليلويا جيه افميفى فى...</h2>
+        </div>
+        <div class="reveal-box" onclick="revealAnswer(this)">
+            <span class="text-xl opacity-60">انقر لكشف الإجابة</span>
+            <div class="reveal-answer">كل أيام الإصوام + الأربعاء والجمعة</div>
+        </div>
+        <button onclick="nextSlide()" class="answer-btn mt-6" style="max-width: 200px; align-self: center;" data-prefix="">التالي</button>
+    </div>
+
+    <!-- Q18 -->
+    <div class="slide" data-type="fill">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">القطمارس</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ١٧</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">قطمارس كلمة من أصل...</h2>
+        </div>
+        <div class="reveal-box" onclick="revealAnswer(this)">
+            <span class="text-xl opacity-60">انقر لكشف الإجابة</span>
+            <div class="reveal-answer">اليونانى</div>
+        </div>
+        <button onclick="nextSlide()" class="answer-btn mt-6" style="max-width: 200px; align-self: center;" data-prefix="">التالي</button>
+    </div>
+
+    <!-- Q19 -->
+    <div class="slide" data-type="fill">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">القطمارس</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ١٨</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">القطمارس هو الكتاب الخاص التى تقراء منه...</h2>
+        </div>
+        <div class="reveal-box" onclick="revealAnswer(this)">
+            <span class="text-xl opacity-60">انقر لكشف الإجابة</span>
+            <div class="reveal-answer">قراءات كل يوم</div>
+        </div>
+        <button onclick="nextSlide()" class="answer-btn mt-6" style="max-width: 200px; align-self: center;" data-prefix="">التالي</button>
+    </div>
+
+    <!-- Q20 -->
+    <div class="slide" data-type="fill">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">القطمارس</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ٢٠</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">انواع القطمارس التى تستخدمه الكنيسة...</h2>
+        </div>
+        <div class="reveal-box" onclick="revealAnswer(this)">
+            <span class="text-xl opacity-60">انقر لكشف الإجابة</span>
+            <div class="reveal-answer text-2xl" style="text-align: right; line-height: 1.4;">
+                ١. قطمارس أيام (سنوى) - ٢. قطمارس آحاد (سنوى)<br>
+                ٣. قطمارس الصوم الكبير - ٤. قطمارس أسبوع الآلام - ٥. قطمارس الخمسين
+            </div>
+        </div>
+        <button onclick="nextSlide()" class="answer-btn mt-6" style="max-width: 200px; align-self: center;" data-prefix="">التالي</button>
+    </div>
+
+
+    <!-- Q21 - Alhan -->
+    <div class="slide" data-type="mcq">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">الألحان</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ٢١</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">متى يقال محير الصوم الكبير؟</h2>
+        </div>
+        <div class="grid grid-cols-1 gap-2 place-items-center">
+            <button class="answer-btn" onclick="handleAnswer(this, true)" data-prefix="A">سبوت وآحاد الصوم الكبير</button>
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="B">أيام الصوم الكبير</button>
+        </div>
+    </div>
+
+    <!-- Q22 - Alhan -->
+    <div class="slide" data-type="mcq">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">الألحان</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ٢٢</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">لحن نيف سينتي هو المزمور رقم...</h2>
+        </div>
+        <div class="grid grid-cols-1 gap-2 place-items-center">
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="A">10</button>
+            <button class="answer-btn" onclick="handleAnswer(this, true)" data-prefix="B">87</button>
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="C">150</button>
+        </div>
+    </div>
+
+    <!-- Q23 - Alhan -->
+    <div class="slide" data-type="mcq">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">الألحان</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ٢٣</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">متى يقال مردات أمانة اللص من يوم الجمعة العظيمة؟</h2>
+        </div>
+        <div class="grid grid-cols-1 gap-2 place-items-center">
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="A">الساعة التاسعة</button>
+            <button class="answer-btn" onclick="handleAnswer(this, true)" data-prefix="B">الساعة السادسة</button>
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="C">الساعة الحادية عشر</button>
+        </div>
+    </div>
+
+    <!-- Q24 - Alhan -->
+    <div class="slide" data-type="mcq">
+        <div class="top-ui">
+            <div class="text-xl font-bold text-yellow-500">الألحان</div>
+            <div class="timer-circle">30</div>
+            <div class="text-xl font-bold text-yellow-500">السؤال ٢٤</div>
+        </div>
+        <div class="question-box">
+            <h2 class="text-3xl font-bold">لحن طون سينا يقال في...</h2>
+        </div>
+        <div class="grid grid-cols-1 gap-2 place-items-center">
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="A">دورة عيد الصعود</button>
+            <button class="answer-btn" onclick="handleAnswer(this, true)" data-prefix="B">دورة عيد القيامة</button>
+            <button class="answer-btn" onclick="handleAnswer(this, false)" data-prefix="C">دورة عيد العنصرة</button>
+        </div>
+    </div>
+
+    <div class="slide" id="slide-end">
+        <div class="flex flex-col items-center justify-center h-full text-center">
+            <div class="mb-10 text-9xl text-yellow-500">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+            <h1 class="text-7xl font-black mb-6" style="color: var(--primary-gold); font-family: 'Amiri';">انتهت المسابقة</h1>
+            <p class="text-3xl mb-12">أحسنتم! بركة الرب تكون معكم جميعاً</p>
+            <button onclick="resetGame()" class="answer-btn" style="max-width: 300px; justify-content: center;" data-prefix="">ابدأ من جديد</button>
+        </div>
+    </div>
+
+    <div class="progress-bar" id="progressBar"></div>
 </div>
 
-<script src="script.js"></script>
+<script>
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSfx(type) {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        if (type === 'correct') {
+            oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+            oscillator.frequency.exponentialRampToValueAtTime(1046.50, audioCtx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            oscillator.type = 'sine';
+        } else if (type === 'wrong') {
+            oscillator.frequency.setValueAtTime(110, audioCtx.currentTime); // A2
+            oscillator.frequency.linearRampToValueAtTime(55, audioCtx.currentTime + 0.2);
+            gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            oscillator.type = 'sawtooth';
+        } else if (type === 'click') {
+            oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            oscillator.type = 'sine';
+        }
+        
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + (type === 'click' ? 0.05 : 0.4));
+    }
+
+    let currentSlideIndex = 0;
+    const slides = document.querySelectorAll('.slide');
+    let timerInterval;
+    const progressBar = document.getElementById('progressBar');
+
+    function updateProgress() {
+        const percent = (currentSlideIndex / (slides.length - 1)) * 100;
+        progressBar.style.width = percent + '%';
+    }
+
+    function showSlide(index) {
+        slides.forEach(s => s.classList.remove('active'));
+        slides[index].classList.add('active');
+        updateProgress();
+        resetTimer(slides[index]);
+    }
+
+    function nextSlide() {
+        if (currentSlideIndex < slides.length - 1) {
+            currentSlideIndex++;
+            showSlide(currentSlideIndex);
+        }
+    }
+
+    function handleAnswer(btn, isCorrect) {
+        const parent = btn.parentElement;
+        const buttons = parent.querySelectorAll('.answer-btn');
+        
+        // Prevent multiple clicks
+        buttons.forEach(b => b.style.pointerEvents = 'none');
+
+        if (isCorrect) {
+            playSfx('correct');
+            btn.classList.add('correct-state');
+            setTimeout(() => {
+                nextSlide();
+            }, 1200);
+        } else {
+            playSfx('wrong');
+            btn.classList.add('wrong-state');
+            setTimeout(() => {
+                btn.classList.remove('wrong-state');
+                buttons.forEach(b => b.style.pointerEvents = 'auto');
+            }, 1000);
+        }
+    }
+
+    function revealAnswer(el) {
+        playSfx('click');
+        const text = el.querySelector('.reveal-answer');
+        const hint = el.querySelector('span');
+        if (text) {
+            text.style.display = 'block';
+            if(hint) hint.style.display = 'none';
+            el.style.borderColor = 'var(--primary-gold)';
+            el.style.background = 'rgba(197, 160, 89, 0.1)';
+        }
+    }
+
+    function resetTimer(slideElement) {
+        clearInterval(timerInterval);
+        const timerDisplay = slideElement.querySelector('.timer-circle');
+        if (!timerDisplay) return;
+
+        let timeLeft = 30;
+        timerDisplay.textContent = timeLeft;
+        timerDisplay.style.color = 'white';
+        timerDisplay.style.borderColor = 'var(--primary-gold)';
+
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            timerDisplay.textContent = timeLeft;
+            
+            if (timeLeft <= 10) {
+                timerDisplay.style.color = '#ef4444';
+                timerDisplay.style.borderColor = '#ef4444';
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                // Highlight timer as expired
+            }
+        }, 1000);
+    }
+
+    function resetGame() {
+        currentSlideIndex = 0;
+        document.querySelectorAll('.answer-btn').forEach(b => {
+            b.classList.remove('correct-state', 'wrong-state');
+            b.style.pointerEvents = 'auto';
+        });
+        document.querySelectorAll('.reveal-answer').forEach(t => t.style.display = 'none');
+        document.querySelectorAll('.reveal-box span').forEach(s => s.style.display = 'block');
+        showSlide(0);
+    }
+
+    window.onload = () => {
+        showSlide(0);
+    };
+</script>
+
 </body>
 </html>
